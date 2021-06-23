@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Pacifico">
+    <link rel="icon" href="http://obj-cache.cloud.ruanbekker.com/favicon.ico">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>Results</title>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div style="background:transparent !important" class="jumbotron">
+            <div style="font-family: 'Pacifico', cursive;">
+                <a href="/">
+                    <center>
+                        <h1>
+                            My Personal search
+                        </h1>
+                    </center>
+                </a>
+            </div>
+        </div>
+
+        <form action="/search/results" method="post">
+            <div class="input-group">
+                <input type="text" class="form-control input-lg" name="input" placeholder="Search" autofocus>
+                <div class="input-group-btn">
+                    <button class="btn btn-primary btn-lg" type="submit">
+          <i class="glyphicon glyphicon-search"></i>
+        </button>
+                </div>
+            </div>
+        </form>
+
+        <!--
+        <center>
+            <h1>Results: ({{ res['hits']['total'] }}) </h1>
+        </center>
+        -->
+        <br>
+        <hr>
+        <center>
+            <p style="text-align: center;">Results: {{ res['hits']['total']["value"] }} </p>
+        </center>
+        <br> {% for hit in res['hits']['hits'] %}
+
+        <div class="panel panel-default">
+            <div class="panel-heading">{{ hit['_source']['title']}}</div>
+            <div class="panel-body">
+                {{ (hit['highlight']['fullplot'][0] if 'highlight' in hit else '') |safe}}
+                <br>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+    </div>
+</body>
+
+</html>

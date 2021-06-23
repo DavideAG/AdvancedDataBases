@@ -1,0 +1,135 @@
+# Get the list of the first 10 movies that have been published
+# between 1939 and 1945 and best matches the word “war” in the plot.
+res = es.search(index="project_3", body={
+"query": {
+    "bool":{
+        "must":[{
+            "match":{
+                "plot": "war" 
+            }},{
+            "range": {
+                "year": {
+                    "gte": 1939,
+                    "lte": 1945
+                }
+            }}
+        ]
+    }
+},
+"size": 10
+})
+
+for doc in res['hits']['hits']:
+    print (doc["_score"], doc["_source"]["title"])
+    
+    
+------------------------------------------------------------------------------
+
+# Get the list of the first 20 movies that have an average IMDB
+# rating higher than 6.0 and best matches “Iron Man” in the full plot.
+res = es.search(index="project_3", body={
+"query": {
+    "bool":{
+        "must":[{
+            "match":{
+                "fullplot": "Iron Man" 
+            }},{
+            "range": {
+                "imdb_rating": {
+                    "gt": 6.0
+                }
+            }}
+        ]
+    }
+},
+"size": 20
+})
+
+for doc in res['hits']['hits']:
+    print (doc["_score"], doc["_source"]["title"])
+    
+------------------------------------------------------------------------------
+
+# Search for the movies that best match the text query “matrix” in the title. Boost the results
+#by multiplying the standard score with the IMDB rating score. Repeat the same query
+#considering the Rotten Tomatoes score instead of IMDB. Does the order of the results change?
+res = es.search(index="project_3", body={
+"query": {
+    "function_score": {
+        "query": {
+            "match":{
+                "title": "matrix",
+            },
+        },
+        "script_score": {
+            "script": {
+                "source": "doc.containsKey('imdb_rating') ? doc['imdb_rating'].value : 1"
+            }
+        }
+    }
+}})
+
+for doc in res['hits']['hits']:
+    print (doc["_score"], doc["_source"]["title"]+',', 'score:', doc["_source"]['imdb_rating'])
+    
+# "boost_mode": "multiply" is the default so we can avoid to write it
+
+------------------------------------------------------------------------------
+
+# using Rotten Tomatoes
+
+res = es.search(index="project_3", body={
+"query": {
+    "function_score": {
+        "query": {
+            "match":{
+                "title": "matrix",
+            },
+        },
+        "script_score": {
+            "script": {
+                "source": "doc.containsKey('tomatoes_rating') ? doc['tomatoes_rating'].value : 1"
+            }
+        }
+    }
+}})
+
+for doc in res['hits']['hits']:
+    print (doc["_score"], doc["_source"]["title"]+',', 'score:', doc["_source"]['tomatoes_rating'])
+
+------------------------------------------------------------------------------
+
+res = es.search(index="project_3", body={
+"query": {
+    "function_score": {
+        "query": {
+            "bool":{
+                "must":[{
+                    "match":{
+                        "fullplot": "mafia"
+                    }},{
+                    "range": {
+                        "imdb_rating": {
+                            "gt": 7.0
+                        }
+                    }},{
+                    "range": {
+                        "year": {
+                            "lt": 2000
+                        }
+                    }}
+                ]
+            }
+        },
+        "script_score": {
+            "script": {
+                "source": "doc.containsKey('imdb_rating') ? doc['imdb_rating'].value : 1"
+            }
+        }
+    }
+},
+"size": 5
+})
+
+for doc in res['hits']['hits']:
+    print (doc["_score"], doc["_source"]["title"])

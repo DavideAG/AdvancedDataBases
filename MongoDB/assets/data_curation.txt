@@ -1,0 +1,34 @@
+Dataset ingestion and curation:
+    - year -> from string to int
+    - imdb.votes -> from string to int
+    - lastupdated -> from string to date
+
+db.imdb.find({year: {$exists: true}}).forEach(
+    function(doc) {
+        var init_value = new NumberInt(doc.year);
+        db.imdb.updateOne(
+            {"_id": doc._id},
+            {"$set": { "year": init_value }}
+         );
+    }
+);
+
+db.imdb.find({"imdb.votes": {$exists: true}}).forEach(
+    function(doc) {
+        var init_value = new NumberInt(doc.imdb.votes);
+        db.imdb.updateOne(
+            {"_id": doc._id},
+            {"$set": { "imdb.votes": init_value }}
+         );
+    }
+);
+
+db.imdb.find({lastupdated: {$exists: true}}).forEach(
+    function(doc) {
+        var init_value = new Date(doc.lastupdated);
+        db.imdb.updateOne(
+            {"_id": doc._id},
+            {"$set": { "lastupdated": init_value }}
+         );
+    }
+);

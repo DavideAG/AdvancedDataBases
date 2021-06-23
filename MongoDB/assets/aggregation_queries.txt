@@ -1,0 +1,63 @@
+Find the average rating score on Rotten Tomatoes for each publication year.
+
+db.imdb.aggregate([{
+    $group: {
+        _id: "$year",
+        avg_rating: {$avg: "$tomatoes.viewer.rating"} }
+}])
+
+
+--
+For movies that include Italy as a country, get the average number of directors.
+Be sure to consider only the movies that contain the list of directors.
+
+db.imdb.aggregate([
+    {$match: {
+        countries: {$in: ["Italy"]},
+        directors: {$exists: true}
+    }},
+    {$group: {
+        _id: null,
+        avg_num_directors: {$avg: {
+            $size: "$directors"
+        }}
+    }}
+])
+
+
+--
+Considering only movies that:
+    a. contain information about IMDB score ratings
+    b. contain a number for IMDB score ratings (you can check it by using $type)
+compute, separately for each movie’s genre:
+    - the average published year, and
+    - the maximum score on IMDB
+
+db.imdb.aggregate([
+    {$match: {
+        "imdb.rating": {$exists: true, $type: "number"}
+    }},
+    {$unwind: "$genres"},
+    {$group: {
+        _id: "$genres",
+        avg_published_year: {$avg: "$year"},
+        max_score_IMDB: {$max: "$imdb.rating"}
+    }}
+])
+
+
+--
+Count the number of movies directed by each director. Sort the results according
+to the descending order of the number of directed movies.
+
+db.imdb.aggregate([
+    {$unwind: "$directors"},
+    {$group: {
+        _id: "$directors",
+        number_of_movies: {$sum: 1}
+    }},
+    {$sort: {
+        number_of_movies: -1
+    }}
+])
+

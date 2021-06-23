@@ -1,0 +1,51 @@
+Find all the movies which have been scored higher than 4.5 on Rotten Tomatoes. The
+reviews for Rotten Tomatoes are contained in the tomatoes nested document. Sort the
+results using the ascending order for the release date.
+
+db.imdb.find({"tomatoes.viewer.rating": {$gt: 4.5}}).sort({released: 1})
+
+NB. i primi sono vuoti non hanno il campo released
+
+
+--
+Find the movies that have been written by 3 writers and directed by 2 directors.
+
+db.imdb.find({directors: {$size: 2}, writers: {$size: 3}})
+
+
+--
+For the movies that belong to the “Drama” genre and belong to the USA country, show
+their plot, duration (runtime), and title. Order the results according to the descending
+duration.
+
+db.imdb.find({
+    "genres": {$in: ['Drama']},
+    "countries": {$in: ['USA']}},
+    {_id: 0,
+    title: 1,
+    plot: 1,
+    runtime: 1
+}).sort({
+    runtime: -1
+})
+
+
+--
+Find the movies satisfying all the following conditions:
+    - have been published between 1900 and 1910
+    - have an imdb rating higher than 9.0
+    - contain the fullplot attribute
+
+db.imdb.find({
+    released: {
+        $gte: new Date(1900, 0, 1),
+        $lte: new Date(1910, 12, 31)},
+    "imdb.rating": {$gt: 9.0},
+    fullplot: {$exists: true}
+},{
+    _id: 0,
+    year: 1,
+    "fullplot_length": {$strLenCP: "$fullplot"}
+}).sort({
+    "imdb.rating": 1
+})

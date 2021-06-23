@@ -1,0 +1,62 @@
+Find the number of movies published for each year.
+
+var map_f = function() {
+    emit(this.year, 1);
+}
+
+var red_f = function(key, values) {
+    return Array.sum(values);
+}
+
+db.imdb.mapReduce(
+    map_f,
+    red_f,
+    {out: {inline: 1}}
+)
+
+
+--
+Group movies according to their number of writers. For each group, find the average
+number of words in the title.
+NB: Check in the map function if the writers attribute is defined (i.e., if it exists).
+
+var map_f = function() {
+    if (this.writers) {
+        emit(this.writers.length,
+        String(this.title).split(" ").length);
+    }
+}
+
+var red_f = function(key, values) {
+    return Array.sum(values)/values.length;
+}
+
+db.imdb.mapReduce(
+    map_f,
+    red_f,
+    {out: {inline: 1}}
+)
+
+
+--
+Count the number of movies available for each language (attribute languages).
+NB: Check in the map function if the languages attribute is defined (i.e., if it exists).
+NB2: It is possible to emit multiple pairs for each document using iterators over an array.
+
+var map_f = function() {
+    if (this.languages) {
+        for (const language in this.languages) {
+            emit(String(language), 1)
+        }
+    }
+}
+
+var red_f = function(key, values) {
+    return Array.sum(values);
+}
+
+db.imdb.mapReduce(
+    map_f,
+    red_f,
+    {out: {inline: 1}}
+)
